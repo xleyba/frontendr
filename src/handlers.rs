@@ -130,3 +130,29 @@ pub fn customer_account_handler(c_parameters: web::Data<ClientParameters>,
                     }).map_err(|_| ())
                 }).map_err(|_| ())
 }
+
+/// Return data of requested account.
+/// Receives accountId.
+pub fn customer_account_detail_handler(c_parameters: web::Data<ClientParameters>, 
+    msg: Query<Parameters>) -> 
+    impl Future<Item = HttpResponse, Error = ()> {
+
+    let account_id = msg.account_id.clone();
+    let mut endpoint = c_parameters.c_endpoint.to_string();
+    endpoint.push_str(&"/customer/account/detail?accountId=".to_string());
+    endpoint.push_str(&account_id);
+    
+    debug!("Calling endpoint: {}", endpoint);
+
+    c_parameters.client.get(endpoint)   // <- Create request builder
+            .header("User-Agent", "Actix-web")
+            .send()                               // <- Send http request
+            .map_err(|_| ())
+            //.map_err(Error::from)
+            .and_then(|mut response| {
+                    response.body().and_then( |body| {
+                        debug!("Received from endpoint: {}", str::from_utf8(&body).unwrap());
+                        Ok(HttpResponse::Ok().body(body))
+                    }).map_err(|_| ())
+                }).map_err(|_| ())
+}
