@@ -8,9 +8,10 @@ use log::Level;
 use colored::*;
 
 mod handlers;
-use crate::handlers::Parameters;
+use crate::handlers::ClientParameters;
 use crate::handlers::index_handler;
 use crate::handlers::hello_handler;
+use crate::handlers::customer_accounts_handler;
 
 // Defines the default port
 const DEFAULT_PORT: u16          = 9296;
@@ -113,7 +114,7 @@ fn main() -> std::io::Result<()> {
     
     HttpServer::new(
         move || App::new()
-            .data(Parameters{
+            .data(ClientParameters{
                 client: Client::default(), 
                 c_endpoint: endpoint.clone(),
             })
@@ -125,6 +126,10 @@ fn main() -> std::io::Result<()> {
                 web::resource("/hello")
                 .route(web::get().to_async(hello_handler))
             ) // end hello service
+            .service(
+                web::resource("/customer/accounts")
+                .route(web::get().to_async(customer_accounts_handler))
+            ) // end customer accounts            
             .default_service(
                 // 404 for GET request
                 web::resource("")
