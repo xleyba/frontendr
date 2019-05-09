@@ -156,3 +156,73 @@ pub fn customer_account_detail_handler(c_parameters: web::Data<ClientParameters>
                     }).map_err(|_| ())
                 }).map_err(|_| ())
 }
+
+/// Retrieves all the customer account movements
+/// Received parameters:
+///		accountId - number with the account
+/// 	sort	  - true or false or not present
+///		asc		  - true or false or not present
+/// Returns the list of movements sorted if requested
+pub fn customer_account_movements_handler(c_parameters: web::Data<ClientParameters>, 
+    msg: Query<SortedParameters>) -> 
+    impl Future<Item = HttpResponse, Error = ()> {
+
+    let account_id = msg.account_id.clone();
+
+    let mut endpoint = c_parameters.c_endpoint.to_string();
+    endpoint.push_str(&"/customer/account/movements?accountId=".to_string());
+    endpoint.push_str(&account_id);
+    endpoint.push_str(&"&sort=");
+    endpoint.push_str(&msg.sort.to_string());
+    endpoint.push_str(&"&asc=");
+    endpoint.push_str(&msg.asc.to_string());
+    
+    debug!("Calling endpoint: {}", endpoint);
+
+    c_parameters.client.get(endpoint)   // <- Create request builder
+            .header("User-Agent", "Actix-web")
+            .send()                               // <- Send http request
+            .map_err(|_| ())
+            //.map_err(Error::from)
+            .and_then(|mut response| {
+                    response.body().and_then( |body| {
+                        debug!("Received from endpoint: {}", str::from_utf8(&body).unwrap());
+                        Ok(HttpResponse::Ok().body(body))
+                    }).map_err(|_| ())
+                }).map_err(|_| ())
+}
+
+// Retrieves all the customer account movements but will display just the top
+// requested after sort them if required.
+//		accountId 		- number with the account
+// 		totalElements	- number of rows to show
+//		asc		  		- true or false or not present
+// Returns the list of movements sorted if requested
+pub fn customer_account_movements_top_handler(c_parameters: web::Data<ClientParameters>, 
+    msg: Query<TopSortedParameters>) -> 
+    impl Future<Item = HttpResponse, Error = ()> {
+
+    let account_id = msg.account_id.clone();
+
+    let mut endpoint = c_parameters.c_endpoint.to_string();
+    endpoint.push_str(&"/customer/account/movements/top?accountId=".to_string());
+    endpoint.push_str(&account_id);
+    endpoint.push_str(&"&totalElements=");
+    endpoint.push_str(&msg.total_elements.to_string());
+    endpoint.push_str(&"&asc=");
+    endpoint.push_str(&msg.asc.to_string());
+    
+    debug!("Calling endpoint: {}", endpoint);
+
+    c_parameters.client.get(endpoint)   // <- Create request builder
+            .header("User-Agent", "Actix-web")
+            .send()                               // <- Send http request
+            .map_err(|_| ())
+            //.map_err(Error::from)
+            .and_then(|mut response| {
+                    response.body().and_then( |body| {
+                        debug!("Received from endpoint: {}", str::from_utf8(&body).unwrap());
+                        Ok(HttpResponse::Ok().body(body))
+                    }).map_err(|_| ())
+                }).map_err(|_| ())
+}

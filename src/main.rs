@@ -14,6 +14,8 @@ use crate::handlers::hello_handler;
 use crate::handlers::customer_accounts_handler;
 use crate::handlers::customer_account_handler;
 use crate::handlers::customer_account_detail_handler;
+use crate::handlers::customer_account_movements_handler;
+use crate::handlers::customer_account_movements_top_handler;
 
 // Defines the default port
 const DEFAULT_PORT: u16          = 9296;
@@ -139,7 +141,15 @@ fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/customer/account/detail")
                 .route(web::get().to_async(customer_account_detail_handler))
-            ) // end customer account details                                   
+            ) // end customer account details    
+            .service(
+                web::resource("/customer/account/movements")
+                .route(web::get().to_async(customer_account_movements_handler))
+            ) // end customer account movements
+            .service(
+                web::resource("/customer/account/movements/top")
+                .route(web::get().to_async(customer_account_movements_top_handler))
+            ) // end customer account movements top                                                          
             .default_service(
                 // 404 for GET request
                 web::resource("")
